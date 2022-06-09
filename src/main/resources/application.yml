@@ -1,0 +1,36 @@
+event:
+  topics: topic1, topic2
+  producers:
+    - operationId: initialProducer
+      topic: topic1
+      keySerializer: org.apache.kafka.common.serialization.StringSerializer
+      key: initial
+      objectToProduce:
+        namespace: avro.example
+        name: User
+        props:
+          name: user1
+          age: 5
+    - operationId: producer1
+      topic: topic2
+      keySerializer: org.apache.kafka.common.serialization.StringSerializer
+      key: producer1
+      value:
+        namespace: avro.example
+        name: User
+        props:
+          name: user2
+          age: 52
+  consumers:
+    - operationId: consumer1
+      topic: topic1
+      delay: 3000
+      launchOperationIds: [ producer1 ]
+spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+logging:
+  level:
+    org:
+      apache:
+        kafka: WARN

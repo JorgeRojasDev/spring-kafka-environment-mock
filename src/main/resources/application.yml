@@ -4,7 +4,7 @@ event:
     - operationId: initialProducer
       topic: topic1
       keySerializer: org.apache.kafka.common.serialization.StringSerializer
-      key: initial
+      valueSerializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       objectToProduce:
         namespace: avro.example
         name: User
@@ -14,8 +14,8 @@ event:
     - operationId: producer1
       topic: topic2
       keySerializer: org.apache.kafka.common.serialization.StringSerializer
-      key: producer1
-      value:
+      valueSerializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      objectToProduce:
         namespace: avro.example
         name: User
         props:

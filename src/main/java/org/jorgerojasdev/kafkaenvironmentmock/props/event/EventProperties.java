@@ -25,7 +25,7 @@ public class EventProperties {
 
     private List<String> topics = new ArrayList<>();
 
-    private Map<String, Object> components = new HashMap<>();
+    private Map<String, Object> refs = new HashMap<>();
 
     @PostConstruct
     public void autoConfigure() {
@@ -67,7 +67,7 @@ public class EventProperties {
             return;
         }
 
-        Map<String, Object> referencedObject = (Map<String, Object>) components.get(ref);
+        Map<String, Object> referencedObject = (Map<String, Object>) refs.get(ref);
 
         if (referencedObject == null) {
             throw new AutoconfigureKEMException(String.format("Reference: %s not found in Producer: %s", ref, producerProperties.getOperationId()));

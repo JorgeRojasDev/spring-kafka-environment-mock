@@ -54,7 +54,7 @@ event:
       delay: 3000
       launchOperationIds: [ producer2 ]
 
-  components:
+  refs:
     UserRef1:
       name: userRef1
       age: 5

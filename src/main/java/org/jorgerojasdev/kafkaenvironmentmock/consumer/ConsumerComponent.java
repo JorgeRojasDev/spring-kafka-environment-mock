@@ -1,6 +1,7 @@
 package org.jorgerojasdev.kafkaenvironmentmock.consumer;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.jorgerojasdev.kafkaenvironmentmock.producer.ProducersComponent;
 import org.jorgerojasdev.kafkaenvironmentmock.props.common.MockType;
@@ -46,7 +47,7 @@ public class ConsumerComponent {
     }
 
     @KafkaListener(topics = "#{'${event.topics}'.replaceAll(' ','').split(',')}", groupId = "mytopicconsumer")
-    private void listen(@Payload ConsumerRecord<Object, Object> record) throws ClassNotFoundException {
+    private <T extends SpecificRecord> void listen(@Payload ConsumerRecord<Object, Object> record) throws ClassNotFoundException {
         String topicName = record.topic();
         if (!topicsAndConsumersMap.containsKey(record.topic())) {
             return;
@@ -54,11 +55,11 @@ public class ConsumerComponent {
 
         for (String consumerOperationId : topicsAndConsumersMap.get(topicName)) {
             ConsumerProperties consumerProperties = globalProperties.getConsumerPropertiesMap().get(consumerOperationId);
-            logger.info(String.format("[Consumer = %s, Received Message From Topic: %s, Next Operations: [%s]]", consumerOperationId, topicName, String.join(", ", consumerProperties.getLaunchOperationIds())));
+            logger.info(String.format("[Consumer = %s, Received Message From Topic: %s, Next Operations: [%s], Value: %s]", consumerOperationId, topicName, String.join(", ", consumerProperties.getLaunchOperationIds()), record.value()));
             for (String launchOperationId : consumerProperties.getLaunchOperationIds()) {
                 if (MockType.PRODUCER.equals(globalProperties.getOperationIds().get(launchOperationId))) {
                     ProducerProperties producerProperties = globalProperties.getProducerPropertiesMap().get(launchOperationId);
-                    producersComponent.executeProducer(producerProperties);
+                    producersComponent.executeProducer(producerProperties, producerProperties.getDelayMs(), 0L);
                 }
             }
         }

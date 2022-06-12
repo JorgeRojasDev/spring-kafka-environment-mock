@@ -3,16 +3,21 @@ package org.jorgerojasdev.kafkaenvironmentmock.props.event;
 import lombok.Data;
 import org.jorgerojasdev.kafkaenvironmentmock.exception.AutoconfigureKEMException;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class ProducerProperties extends TopicProperties {
 
     private String keySerializer;
 
-    private String valueSerializer;
+    private String key;
 
-    private Properties objectToProduce;
+    private Map<String, Object> record = new HashMap<>();
+
+    private Long delayMs = 0L;
+
+    private Long fixedScheduleTimeMs = 0L;
 
     public void validate() {
         super.validate();
@@ -22,26 +27,38 @@ public class ProducerProperties extends TopicProperties {
         }
     }
 
+    public String getRef() {
+        Object ref = record.get("ref");
+        if (ref == null) {
+            return null;
+        }
+        return String.valueOf(ref);
+    }
+
+    public void assignValueFromRef(Map<String, Object> value) {
+        record.put("value", value);
+    }
+
     private String resolveErrorField() {
 
         if (keySerializer == null) {
             return "keySerializer";
         }
 
-        if (valueSerializer == null) {
-            return "valueSerializer";
+        if (record == null) {
+            return "record";
         }
 
-        if (objectToProduce == null) {
-            return "objecToProduce";
+        if (!record.containsKey("namespace") && record.get("namespace") != null) {
+            return "record.namespace";
         }
 
-        if (!objectToProduce.containsKey("namespace") && objectToProduce.get("namespace") != null) {
-            return "objectToProduce.namespace";
+        if (!record.containsKey("name") && record.get("name") != null) {
+            return "record.name";
         }
 
-        if (!objectToProduce.containsKey("name") && objectToProduce.get("name") != null) {
-            return "objectToProduce.name";
+        if (!record.containsKey("value") && !record.containsKey("ref")) {
+            return "record.value || record.ref";
         }
 
         return null;

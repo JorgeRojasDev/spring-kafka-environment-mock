@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -11,7 +11,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
-      - zookeeper
+      - schemaregistry
     ports:
       - 29092:29092
     environment:
@@ -24,7 +24,6 @@ services:
 
   schemaregistry:
     image: confluentinc/cp-schema-registry:5.1.2
-    restart: always
     depends_on:
       - zookeeper
     environment:

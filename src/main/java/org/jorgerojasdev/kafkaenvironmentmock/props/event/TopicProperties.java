@@ -10,10 +10,6 @@ public abstract class TopicProperties {
 
     private String topic;
 
-    private Long delayMs = 0L;
-
-    private Long fixedScheduleTimeMs = 0L;
-
     public void validate() {
         String errorField = null;
 

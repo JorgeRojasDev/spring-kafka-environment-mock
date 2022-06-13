@@ -11,7 +11,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
-      - schemaregistry
+      - zookeeper
     ports:
       - 29092:29092
     environment:
@@ -25,7 +25,7 @@ services:
   schemaregistry:
     image: confluentinc/cp-schema-registry:5.1.2
     depends_on:
-      - zookeeper
+      - kafka
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
       SCHEMA_REGISTRY_HOST_NAME: schemaregistry

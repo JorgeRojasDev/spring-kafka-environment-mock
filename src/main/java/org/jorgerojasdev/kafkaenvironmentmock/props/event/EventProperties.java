@@ -1,16 +1,18 @@
 package org.jorgerojasdev.kafkaenvironmentmock.props.event;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.jorgerojasdev.kafkaenvironmentmock.exception.AutoconfigureKEMException;
 import org.jorgerojasdev.kafkaenvironmentmock.props.global.GlobalProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 @ConfigurationProperties(prefix = "event")
 @Data
@@ -67,13 +69,23 @@ public class EventProperties {
             return;
         }
 
-        Map<String, Object> referencedObject = (Map<String, Object>) refs.get(ref);
-
-        if (referencedObject == null) {
-            throw new AutoconfigureKEMException(String.format("Reference: %s not found in Producer: %s", ref, producerProperties.getOperationId()));
-        }
+        Map<String, Object> referencedObject =
+                getJsonRefIfRefObjectIsNull(producerProperties.getOperationId(), ref, (Map<String, Object>) refs.get(ref));
 
         producerProperties.assignValueFromRef(referencedObject);
+    }
+
+    private Map<String, Object> getJsonRefIfRefObjectIsNull(String operationId, String refName, Map<String, Object> referencedObject) {
+        if (referencedObject != null) {
+            return referencedObject;
+        }
+
+        try (JsonReader reader = new JsonReader(new FileReader(new ClassPathResource(String.format("refs/%s.json", refName)).getFile()))) {
+            Gson gson = new Gson();
+            return gson.fromJson(reader, LinkedHashMap.class);
+        } catch (IOException e) {
+            throw new AutoconfigureKEMException(String.format("Reference: %s not found in Producer: %s", refName, operationId));
+        }
     }
 
 }

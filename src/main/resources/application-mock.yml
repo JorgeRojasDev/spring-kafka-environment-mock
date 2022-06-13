@@ -6,6 +6,7 @@ event:
       topic: topic1
       keySerializer: org.apache.kafka.common.serialization.StringSerializer
       key: initialKey
+      fixedScheduleTimeMs: 5500
       record:
         namespace: avro.example
         name: User
@@ -35,14 +36,7 @@ event:
       record:
         namespace: avro.example
         name: User
-        value:
-          name: user2
-          age: 69
-          notes:
-            geography: 3
-            maths: 4
-        children:
-          - name: Genaro
+        ref: UserExampleOk
 
   consumers:
     - operationId: consumer1
@@ -54,7 +48,7 @@ event:
       delay: 3000
       launchOperationIds: [ producer2 ]
 
-  components:
+  refs:
     UserRef1:
       name: userRef1
       age: 5

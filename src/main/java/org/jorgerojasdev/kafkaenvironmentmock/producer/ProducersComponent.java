@@ -48,7 +48,7 @@ public class ProducersComponent {
     public <T extends SpecificRecord> void executeProducer(ProducerProperties producer, Long initialDelayMs, Long fixedRateMs) throws ClassNotFoundException {
         Runnable produceAction = getRunnableProducerAction(producer, initialDelayMs);
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        if (fixedRateMs > 5000) {
+        if (fixedRateMs >= 5000) {
             executorService.scheduleAtFixedRate(produceAction, 0, fixedRateMs, TimeUnit.MILLISECONDS);
         } else {
             executorService.execute(produceAction);

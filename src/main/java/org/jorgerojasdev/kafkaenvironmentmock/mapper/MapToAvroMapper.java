@@ -52,11 +52,11 @@ public class MapToAvroMapper {
             switch (classToCast.getSimpleName()) {
                 case "int":
                 case "Integer":
-                    objectCasted = Integer.valueOf(object.toString());
+                    objectCasted = resolveInteger(object);
                     break;
                 case "long":
                 case "Long":
-                    objectCasted = Long.valueOf(object.toString());
+                    objectCasted = resolveLong(object);
                     break;
                 case "float":
                 case "Float":
@@ -75,6 +75,22 @@ public class MapToAvroMapper {
             }
             return (T) objectCasted;
         }
+    }
+
+    private Integer resolveInteger(Object object) {
+        if (Double.class.equals(object.getClass())) {
+            return ((Double) object).intValue();
+        }
+
+        return Integer.valueOf(object.toString());
+    }
+
+    private Long resolveLong(Object object) {
+        if (Double.class.equals(object.getClass())) {
+            return ((Double) object).longValue();
+        }
+
+        return Long.valueOf(object.toString());
     }
 
     private <T> T getComplexObjectFromMap(Class<T> clazz, Map<String, Object> properties) throws IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -130,6 +146,16 @@ public class MapToAvroMapper {
 
     private <T> List<T> getTreatedList(Field field, Map<String, Object> properties) {
         Class<T> listType = getGenericInferredClass(field.getGenericType(), 0);
+        Object objectToProcess = properties.get(field.getName());
+
+        if (List.class.isAssignableFrom(objectToProcess.getClass())) {
+            return getTreatedListFromAnotherList(listType, field, properties);
+        }
+
+        return getTreatedListFromMap(listType, field, properties);
+    }
+
+    private <T> List<T> getTreatedListFromMap(Class<T> listType, Field field, Map<String, Object> properties) {
         List<T> list = new ArrayList<>();
         ((Map<String, Object>) properties.get(field.getName())).forEach((key, value) -> {
             T object;
@@ -142,6 +168,39 @@ public class MapToAvroMapper {
                     throw new AutoconfigureKEMException(String.format("Error casting object: %s", value), e);
                 }
             }
+            list.add(object);
+        });
+        return list;
+    }
+
+    private <T> List<T> getTreatedListFromAnotherList(Class<T> listType, Field field, Map<String, Object> properties) {
+        if (checkIfClassIsAutoAssignable(listType)) {
+            return getTreatedListFromListAutoAssignable(listType, field, properties);
+        }
+        return getTreatedListFromMapListNonAutoAssignable(listType, field, properties);
+    }
+
+    private <T> List<T> getTreatedListFromListAutoAssignable(Class<T> listType, Field field, Map<String, Object> properties) {
+        List<T> list = new ArrayList<>();
+        ((List<Object>) properties.get(field.getName())).forEach((map) -> {
+            T object;
+            object = this.castToFinalObject(listType, map);
+            list.add(object);
+        });
+        return list;
+    }
+
+    private <T> List<T> getTreatedListFromMapListNonAutoAssignable(Class<T> listType, Field field, Map<String, Object> properties) {
+        List<T> list = new ArrayList<>();
+        ((List<Map<String, Object>>) properties.get(field.getName())).forEach((map) -> {
+            T object;
+
+            try {
+                object = this.getComplexObjectFromMap(listType, map);
+            } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                throw new AutoconfigureKEMException(String.format("Error casting object: %s", map), e);
+            }
+
             list.add(object);
         });
         return list;

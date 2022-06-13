@@ -1,6 +1,7 @@
 FROM jorgerojasdev/kafka-environment-mock:latest
-ADD environment-mock.yml /usr/kem/src/main/resources/application-embedded.yml
-ADD avro /usr/kem/src/main/resouces/avro
+COPY avro /usr/kem/src/main/resouces
 WORKDIR /usr/kem/
 RUN mvn clean install
+COPY refs /usr/kem/src/main/resources
+COPY '*.yml' /usr/kem/src/main/resources
 ENTRYPOINT ["mvn", "spring-boot:run"]

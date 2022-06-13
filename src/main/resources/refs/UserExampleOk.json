@@ -1,0 +1,19 @@
+{
+  "name": "Genara",
+  "age": 35,
+  "notes": {
+    "geography": 9,
+    "maths": 7
+  },
+  "children": [
+    {
+      "name": "Gregoria"
+    },
+    {
+      "name": "Guzmán"
+    },
+    {
+      "name": "Pepita"
+    }
+  ]
+}

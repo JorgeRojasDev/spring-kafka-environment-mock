@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: embedded
+    active: mock, mock-${MOCK_ENVIRONMENT}
   kafka:
     bootstrap-servers: localhost:29092
 logging:

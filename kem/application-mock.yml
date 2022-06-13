@@ -35,14 +35,7 @@ event:
       record:
         namespace: avro.example
         name: User
-        value:
-          name: user2
-          age: 69
-          notes:
-            geography: 3
-            maths: 4
-        children:
-          - name: Genaro
+        ref: UserRef1
 
   consumers:
     - operationId: consumer1

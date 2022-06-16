@@ -105,15 +105,32 @@ public class MapToAvroMapper {
     }
 
     private <T> void assignValue(Field field, T objectToAssign, Map<String, Object> properties) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (checkIfClassIsAutoAssignable(field.getType())) {
-            field.set(objectToAssign, castToFinalObject(field.getType(), properties.get(field.getName())));
-        } else {
-            this.treatComplexObject(field, objectToAssign, properties);
+        Object value = properties.get(field.getName());
+        if (value == null) {
+            return;
         }
+        if (checkIfClassIsAutoAssignable(field.getType())) {
+            field.set(objectToAssign, castToFinalObject(field.getType(), value));
+            return;
+        }
+
+        if (field.getType().isEnum()) {
+            assignEnum(field, objectToAssign, properties);
+            return;
+        }
+        this.treatComplexObject(field, objectToAssign, properties);
+    }
+
+    private <T, E extends Enum<E>> void assignEnum(Field field, T objectToAssign, Map<String, Object> properties) throws IllegalAccessException {
+        Object value = properties.get(field.getName());
+        if (value == null) {
+            return;
+        }
+        Class<E> enumClazz = (Class<E>) field.getType();
+        field.set(objectToAssign, Enum.valueOf(enumClazz, String.valueOf(value)));
     }
 
     private <T> void treatComplexObject(Field field, Object objectToAssign, Map<String, Object> properties) throws InvocationTargetException, IllegalAccessException, InstantiationException {
-        //TODO specialTreatments
         if (Map.class.isAssignableFrom(field.getType())) {
             field.set(objectToAssign, properties.get(field.getName()) != null ? getTreatedMap(field, properties) : new HashMap<>());
             return;

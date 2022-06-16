@@ -7,6 +7,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.errors.SerializationException;
 import org.jorgerojasdev.kafkaenvironmentmock.constants.KEMConstants;
 import org.jorgerojasdev.kafkaenvironmentmock.mapper.MapToAvroMapper;
 import org.jorgerojasdev.kafkaenvironmentmock.props.event.ProducerProperties;
@@ -71,6 +72,7 @@ public class ProducersComponent {
 
     private <T> Runnable getRunnableProducerAction(ProducerProperties producerProperties, Long initialDelayMs) throws ClassNotFoundException {
         Producer kafkaProducer = this.getOrCreateProducer(producerProperties);
+
         return () -> {
             try {
                 Map<String, Object> object = producerProperties.getRecord();
@@ -80,8 +82,8 @@ public class ProducersComponent {
                 ProducerRecord<Object, T> producerRecord = new ProducerRecord<>(producerProperties.getTopic(), null, new Date().getTime(), producerProperties.getKey(), (T) mapToAvroMapper.mapToAvro(namespace, name, object));
                 kafkaProducer.send(producerRecord);
                 logger.info(String.format("[Producer = %s, Send To Topic: %s, Message: %s]", producerProperties.getOperationId(), producerProperties.getTopic(), producerRecord));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException | SerializationException e) {
+                logger.error(String.format("Error Sending message on producer. OperationId: %s", producerProperties.getOperationId()), e);
             }
         };
     }
@@ -97,7 +99,6 @@ public class ProducersComponent {
                 KafkaAvroSerializer.class);
         props.put(KEMConstants.SCHEMA_REGISTRY_KEY, KEMConstants.SCHEMA_REGISTRY_VALUE);
 
-        //TODO no engancha con el schema registry
         Producer producer = new KafkaProducer<>(props);
         producerMap.put(operationId, producer);
 

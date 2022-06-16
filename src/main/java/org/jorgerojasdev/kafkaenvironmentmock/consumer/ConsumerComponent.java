@@ -45,7 +45,7 @@ public class ConsumerComponent {
             }
         });
     }
-
+    
     @KafkaListener(topics = "#{'${event.topics}'.replaceAll(' ','').split(',')}", groupId = "mytopicconsumer")
     private <T extends SpecificRecord> void listen(@Payload ConsumerRecord<Object, Object> record) throws ClassNotFoundException {
         String topicName = record.topic();

@@ -97,7 +97,8 @@ public class MapToAvroMapper {
         T object = getEmptyConstructor(clazz).newInstance();
         List<Field> fields = Arrays.asList(clazz.getDeclaredFields());
         for (Field field : fields) {
-            if (field.getModifiers() == Modifier.PUBLIC) {
+            if (field.getModifiers() == Modifier.PRIVATE || field.getModifiers() == Modifier.PUBLIC) {
+                field.setAccessible(true);
                 assignValue(field, object, properties);
             }
         }

@@ -15,8 +15,8 @@ public class MapToAvroMapper {
         try {
             Class<?> avroClass = Class.forName(String.format("%s.%s", namespace, avro));
             return (T) getComplexObjectFromMap(avroClass, (Map<String, Object>) properties.get("value"));
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new AutoconfigureKEMException("Error parsing object to avro, check your object definition");
+        } catch (Exception e) {
+            throw new AutoconfigureKEMException("Error parsing object to avro, check your object definition", e);
         }
     }
 
